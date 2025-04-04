@@ -29,7 +29,7 @@ class Ship(pygame.sprite.Sprite):
     def laser_timer(self):
         if not self.can_shoot:
             current_time = pygame.time.get_ticks()
-            if current_time - self.shoot_time > 500:
+            if current_time - self.shoot_time > 300:
                 self.can_shoot = True
     def input_position(self):
         pos = pygame.mouse.get_pos()
@@ -67,29 +67,41 @@ class Laser(pygame.sprite.Sprite):
 class Meteor(pygame.sprite.Sprite):
     def __init__(self, pos, groups):
         super().__init__(groups)
-        self.image = pygame.image.load("./assets/images/meteor2.png").convert_alpha()
+        meteor_surf = pygame.image.load("./assets/images/meteor2.png").convert_alpha()
+        meteor_size = pygame.math.Vector2(meteor_surf.get_size()) * uniform(0.5, 1.8)
+        self.scaled_surf = pygame.transform.scale(meteor_surf, meteor_size)
+        self.image = self.scaled_surf
         self.rect = self.image.get_rect(center=pos)
 
         self.rect = self.image.get_rect(center=pos)
         self.pos = pygame.math.Vector2(self.rect.topleft)
         self.direction = pygame.math.Vector2(uniform(-0.5, 0.5),1)
-        self.speed = randint(400, 600)
+        self.speed = randint(300, 500)
 
+        self.rotation = 0
+        self.rotation_speed = randint(20,50)
+
+    def rotate(self):
+        self.rotation += self.rotation_speed * dt
+        rotated_surf = pygame.transform.rotozoom(self.scaled_surf, self.rotation, 1)
+        self.image = rotated_surf
+        self.rect = self.image.get_rect(center = self.rect.center)
     def update(self):
         self.pos += self.direction * self.speed * dt
         self.rect.topleft = (round(self.pos.x), round(self.pos.y))
+        self.rotate()
 
 
 class Score:
     def __init__(self):
-        self.font = pygame.font.Font('./assets/graphics/subatomic.ttf', 50)
+        self.font = pygame.font.Font('./assets/graphics/Pixeled.ttf', 15)
 
     def display(self):
          score_text = f'Score: {pygame.time.get_ticks() // 1000}'
          text_surf = self.font.render(score_text, True, (255,255,255))
          text_rect = text_surf.get_rect(midbottom = (WINDOW_WIDTH / 2, WINDOW_HEIGHT - 80))
          display_surface.blit(text_surf, text_rect)
-         pygame.draw.rect(display_surface, (255,255,255), text_rect.inflate(30,30), width = 8, border_radius = 5)
+         pygame.draw.rect(display_surface, (255,255,255), text_rect.inflate(30,30), width = 6, border_radius = 4)
 
 
 
